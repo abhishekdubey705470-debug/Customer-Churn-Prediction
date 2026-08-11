@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Home · Churn AI{% endblock %}
+{% block content %}
+<section class="hero glass-card p-5 mb-4 text-center">
+  <h1 class="display-5 fw-bold text-gradient">Customer Churn Prediction With AI</h1>
+  <p class="lead">Predict which customers are about to leave — and what to do about it.</p>
+  <div class="d-flex gap-2 justify-content-center mt-3">
+    <a href="/prediction" class="btn btn-primary btn-lg"><i class="bi bi-magic"></i> Predict Now</a>
+    <a href="/analytics" class="btn btn-outline-primary btn-lg"><i class="bi bi-bar-chart"></i> View Analytics</a>
+  </div>
+</section>
+
+<div class="row g-3">
+  <div class="col-md-3"><div class="stat-card glass-card"><div class="label"><i class="bi bi-database me-1"></i>Total Predictions</div><div class="value">{{ stats.total_predictions }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card glass-card"><div class="label"><i class="bi bi-exclamation-triangle me-1"></i>At-Risk Customers</div><div class="value text-danger">{{ stats.churn_count }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card glass-card"><div class="label"><i class="bi bi-check-circle me-1"></i>Retained</div><div class="value text-success">{{ stats.retained_count }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card glass-card"><div class="label"><i class="bi bi-percent me-1"></i>Avg Churn Risk</div><div class="value text-gradient">{{ (stats.avg_probability * 100)|round(1) }}%</div></div></div>
+</div>
+
+<div class="row mt-4 g-3">
+  <div class="col-md-6">
+    <div class="glass-card p-4 h-100">
+      <h4><i class="bi bi-cpu"></i> AI Engine</h4>
+      <p>A Random Forest pipeline trained on tenure, charges, support contacts, contract type, and region. Each prediction is paired with an AI-generated retention recommendation.</p>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="glass-card p-4 h-100">
+      <h4><i class="bi bi-shield-check"></i> Model Status</h4>
+      <p>Trained model: <strong>{{ 'Ready' if stats.model_ready else 'Not trained — visit Admin' }}</strong></p>
+      <a href="/model-performance" class="btn btn-sm btn-outline-primary">View Performance</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

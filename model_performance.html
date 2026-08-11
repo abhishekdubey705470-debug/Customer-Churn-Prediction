@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Model Performance · Churn AI{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="glass-card p-4 mb-4">
+      <h2 class="mb-3">Model Performance</h2>
+      <p class="text-muted">Live model metadata and performance metrics from the production API endpoint.</p>
+      <div id="perfRow" class="row gy-3"></div>
+      <div class="mt-4">
+        <h5>Raw model info</h5>
+        <pre id="rawInfo" class="bg-light p-3 rounded"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const modelInfoUrl = '{{ url_for("model_api.model_info") }}';
+
+  fetch(modelInfoUrl)
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to load model info');
+      return response.json();
+    })
+    .then(data => {
+      const metrics = data.metrics || {};
+      const cards = [
+        ['Accuracy', metrics.accuracy],
+        ['Precision', metrics.precision],
+        ['Recall', metrics.recall],
+        ['F1 Score', metrics.f1_score],
+        ['ROC-AUC', metrics.roc_auc],
+      ];
+
+      document.getElementById('perfRow').innerHTML = cards.map(([label, value]) => {
+        const display = typeof value === 'number'
+          ? `${(value * 100).toFixed(1)}%`
+          : 'N/A';
+        return `
+          <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <div class="fs-6 text-secondary mb-2">${label}</div>
+                <div class="fs-3 fw-bold">${display}</div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('rawInfo').textContent = JSON.stringify(data, null, 2);
+    })
+    .catch(error => {
+      document.getElementById('perfRow').innerHTML =
+        `<div class="col-12 alert alert-danger">${error.message}</div>`;
+      document.getElementById('rawInfo').textContent = '';
+    });
+</script>
+{% endblock %}

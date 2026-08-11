@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Prediction Center · Churn AI{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-magic text-gradient"></i> Prediction Center</h2>
+    
+    <ul class="nav nav-pills nav-pills-custom" id="predictionTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="single-tab" data-bs-toggle="pill" data-bs-target="#singlePredict" type="button" role="tab" aria-controls="singlePredict" aria-selected="true">
+          <i class="bi bi-person-badge me-1"></i> Single Customer
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="bulk-tab" data-bs-toggle="pill" data-bs-target="#bulkPredict" type="button" role="tab" aria-controls="bulkPredict" aria-selected="false">
+          <i class="bi bi-file-earmark-spreadsheet me-1"></i> Bulk Batch
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content" id="predictionTabContent">
+    <!-- Single Prediction Tab -->
+    <div class="tab-pane fade show active" id="singlePredict" role="tabpanel" aria-labelledby="single-tab">
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="glass-card">
+            <h4 class="mb-3"><i class="bi bi-person-lines-fill me-2"></i>Customer Information</h4>
+            <p class="text-muted small">Fill out the customer's metrics to assess churn risk and generate AI recommendations.</p>
+            <form id="predictForm" class="mt-2">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Tenure (months)</label>
+                  <input type="number" min="0" max="600" class="form-control" name="tenure_months" value="12" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Monthly Charges ($)</label>
+                  <input type="number" step="0.01" min="0" class="form-control" name="monthly_charges" value="850" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Support Calls</label>
+                  <input type="number" min="0" max="1000" class="form-control" name="support_calls" value="2" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Contract Type</label>
+                  <select class="form-select" name="contract_type">
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Region</label>
+                  <select class="form-select" name="region">
+                    <option value="north">North</option>
+                    <option value="south">South</option>
+                    <option value="east">East</option>
+                    <option value="west">West</option>
+                  </select>
+                </div>
+              </div>
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-lightning-charge-fill me-1"></i> Analyze Customer</button>
+                <button type="reset" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i> Clear</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <div class="col-lg-6">
+          <div class="glass-card d-flex flex-column justify-content-center align-items-center text-center p-5" id="resultCard">
+            <i class="bi bi-stars text-gradient display-1 mb-3"></i>
+            <h3>Ready for Analysis</h3>
+            <p class="text-muted px-4">Submit the form on the left to run predictions and obtain tailored customer retention guidelines.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Prediction Tab -->
+    <div class="tab-pane fade" id="bulkPredict" role="tabpanel" aria-labelledby="bulk-tab">
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <div class="glass-card">
+            <h4 class="mb-3"><i class="bi bi-cloud-upload me-2"></i>Batch File Upload</h4>
+            <p class="text-muted small">Upload a customer list in CSV format. The file must include the following headers:</p>
+            <div class="bg-black bg-opacity-25 rounded p-2 mb-3 font-monospace small">
+              tenure_months, monthly_charges, support_calls, contract_type, region
+            </div>
+            
+            <form id="bulkForm">
+              <div class="uploader-box mb-3" id="dragDropArea">
+                <i class="bi bi-file-earmark-arrow-up display-3 text-gradient mb-2 d-block"></i>
+                <span class="d-block fw-semibold mb-1" id="uploadLabel">Drag & Drop CSV file here</span>
+                <span class="text-muted small d-block mb-3">or click to browse from device</span>
+                <input type="file" id="bulkFile" name="file" accept=".csv" class="d-none">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('bulkFile').click()">Browse Files</button>
+              </div>
+              
+              <div id="fileInfo" class="alert alert-light py-2 px-3 d-none mb-3 align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-filetype-csv text-danger fs-3 me-2"></i>
+                  <span id="fileName" class="fw-semibold text-truncate" style="max-width: 200px;">file.csv</span>
+                </div>
+                <button type="button" class="btn-close" id="clearFileBtn"></button>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <a href="#" id="downloadTemplate" class="text-decoration-none small fw-semibold"><i class="bi bi-download me-1"></i>Download Template CSV</a>
+                <button type="submit" class="btn btn-primary" id="runBulkBtn" disabled><i class="bi bi-play-circle me-1"></i>Run Predictions</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="glass-card" id="bulkResultCard">
+            <div class="text-center p-5 text-muted">
+              <i class="bi bi-file-earmark-spreadsheet display-1 mb-3 text-gradient"></i>
+              <h4>No Batch Processed</h4>
+              <p>Upload a customer dataset to run predictions, view risk aggregates, and export annotated retention logs.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/prediction.js') }}"></script>
+{% endblock %}
